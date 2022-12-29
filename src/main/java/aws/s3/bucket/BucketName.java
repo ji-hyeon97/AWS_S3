@@ -1,9 +1,5 @@
 package aws.s3.bucket;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
 public enum BucketName {
 
     PROFILE_IMAGE("seojihyeon");
