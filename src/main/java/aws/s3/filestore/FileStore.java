@@ -3,9 +3,13 @@ package aws.s3.filestore;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +38,15 @@ public class FileStore {
             s3.putObject(path,fileName,inputStream,metadata);
         } catch (AmazonServiceException e){
             throw new IllegalStateException("파일을 s3에 저장하기 실패");
+        }
+    }
+
+    public byte[] download(String path, String key) {
+        try{
+            S3Object object = s3.getObject(path, key);
+            return IOUtils.toByteArray(object.getObjectContent());
+        }catch (AmazonServiceException | IOException e){
+            throw new IllegalStateException("s3의 파일을 다운로드 받는데 실패함",e);
         }
     }
 }

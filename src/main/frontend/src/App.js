@@ -1,57 +1,68 @@
+import React, {useState,useEffect,useCallback} from 'react';
+import axios from "axios";
 import './App.css';
-import axios from 'axios';
-import React, { useState, useEffect, useCallback } from 'react';
 import {useDropzone} from 'react-dropzone'
 
 const UserProfiles = () => {
 
-  const [UserProfiles, setUserProfiles] = useState([]);
+  const [ userProfiles, setUserProfiles ] = useState([]);
 
   const fetchUserProfiles = () => {
-    axios.get("http://localhost:8080/api/v1/user-profile").then(res=>{
+    axios.get('http://localhost:8080/api/v1/user-profile').then(res => {
+
       console.log(res);
       setUserProfiles(res.data);
     });
   };
 
-useEffect(() => {
-  fetchUserProfiles();
-}, []);
+  useEffect(() => {
+    fetchUserProfiles();
+  },[]);
 
-return UserProfiles.map((UserProfile,index) =>{
-  return( <div key={index}>
-    <br/>
-    <br/>
-    <h1>{UserProfile.username}</h1>
-    <p>{UserProfile.userProfileId}</p>
-    <MyDropzone {...UserProfile}/>
-    <br/>
-  </div>
-  );
-});
-};
+  return userProfiles.map((userProfile, index) => {
+    return (
+      <div key={index}>
+        {userProfile.userProfileId ? 
+        (<img src={`http://localhost:8080/api/v1/user-profile/${userProfile.userProfileId}/image/download`} />
+        ) : null }
+        <br />
+        <br />
+        <h1>{userProfile.username}</h1>
+        <p>{userProfile.userProfileId}</p>
+        <Dropzone {...userProfile} />
+        <br />
+      </div>
+    )
+  });
+}
 
-function MyDropzone({ userProfileId }) {
+function Dropzone( userProfile ) {
+
   const onDrop = useCallback(acceptedFiles => {
-    const file = acceptedFiles[0];
 
+    const file = acceptedFiles[0];
     console.log(file);
 
     const formData = new FormData();
-    formData.append("file",file);
 
-    axios.post(`http://localhost:8080/api/v1/user-profile/${userProfileId}/image/upload`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data"
-      }
+    formData.append("file", file);
+
+    axios.post(
+      `http://localhost:8080/api/v1/user-profile/${userProfile.userProfileId}/image/upload`,
+    formData, {
+    headers: {
+      "Content-Type":"multipart/form-data"
+    }
     }).then(() => {
-      console.log("file upload successfully");
+      console.log("image uploaded successfully")
+
     }).catch(err => {
-      console.log(err);
-    });
-  }, []);
+      console.log(err)
+
+    })
+
+    }, [])
+
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
   return (
@@ -59,8 +70,8 @@ function MyDropzone({ userProfileId }) {
       <input {...getInputProps()} />
       {
         isDragActive ?
-          <p>이미지를 올려주세요 ...</p> :
-          <p>이미지를 올려주거나 프로필 이미지를 클릭해주세요</p>
+          <p>Drop the files here ...</p> :
+          <p>Drag 'n' drop profile images, or click to select profile images</p>
       }
     </div>
   )
@@ -69,8 +80,8 @@ function MyDropzone({ userProfileId }) {
 function App() {
   return (
     <div className="App">
-      <UserProfiles/>
-    </div>
+      <UserProfiles />
+      </div>
   );
 }
 
